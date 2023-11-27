@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interfaz2>
+    <campo tipo="titulo" texto="Reservation Form"></campo>
+    <campo tipo="etiqueta" texto="Name:"></campo>
+    <campo tipo="entrada" texto=""></campo>
+    <campo tipo="etiqueta" texto="Surname:"></campo>
+    <campo tipo="entrada" texto=""></campo>
+    <campo tipo="etiqueta" texto="Phone number:"></campo>
+    <campo tipo="entrada" texto=""></campo>
+    <campo tipo="etiqueta" texto="Contact email:"></campo>
+    <campo tipo="entrada" texto=""></campo>
+    <campo tipo="etiqueta" texto="Number of attendees (Max. 10):"></campo>
+    <campo tipo="spinbox"></campo>
+    <campo tipo="etiqueta" texto="Leave suggestions or comments about allergens:"></campo>
+    <campo tipo="texto"></campo>
+    <campo tipo="check" texto="Parking"></campo>
+    <campo tipo="boton" texto="Send"></campo>
+
+</interfaz2>

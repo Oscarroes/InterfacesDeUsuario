@@ -28,6 +28,8 @@ for campo in xml.find_all("campo"):
         ttk.Combobox(raiz,values=valores).pack(padx=10,pady=10)
     elif tipo == "spinbox":
         ttk.Spinbox(raiz,from_=0,to=10).pack(padx=10,pady=10)
+    elif tipo == "texto":
+        tk.Text(raiz,width=30,height=10).pack(padx=10,pady=10)
     elif tipo == "titulo":
         fuente = ("Arial",16,"bold")
         ttk.Label(raiz,text=texto,font=fuente).pack(padx=20,pady=20)
