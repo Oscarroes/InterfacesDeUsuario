@@ -1,0 +1,40 @@
+        /* estilos para que se vea sólo el canvas */
+        html,
+        body {
+            background: black;
+        }
+
+        video {
+            display: none;
+        }
+
+        canvas {
+            position: absolute;
+            top: 400px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #lienzo2 {
+            opacity: 0.5;
+        }
+
+        select{
+            position:absolute;
+            bottom: 30px;
+        }
+
+        input{
+            position:absolute;
+            bottom: 30px;
+        }
+        #paso{left: 35%;}
+        #promedio{left:55%;}
+
+        label{
+            position:absolute;
+            bottom: 60px;
+            color: white;
+        }
+        #etiquetaPaso{left: 35%;}
+        #etiquetaPromedio{left: 55%;}

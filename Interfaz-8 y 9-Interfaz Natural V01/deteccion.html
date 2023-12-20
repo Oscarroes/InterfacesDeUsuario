@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detección de movimiento</title>
+    <link rel="stylesheet" href="estilos.css">
+
+</head>
+
+<body>
+    <!-- //vamos a meter 2 lienzos uno captura el vídeo el otro es una réplica para coger los valores-->
+    <canvas id="lienzo" width="640px" height="480px"></canvas>
+    <canvas id="lienzo2" width="640px" height="480px"></canvas>
+    <video id="video" autoplay></video>
+    <!-- Selector de paso: A mayor paso, más saltos entre píxeles entre comparación-->
+    <label id="etiquetaPaso" for="pasoInput">Selecciona el salto de pixeles</label>
+    <select id="paso" name="pasoInput">
+        <option value="16" selected>Salto de 16px</option>
+        <option value="32">Salto de 64px</option>
+        <option value="64">Salto de 128px</option>
+    </select>
+    <!--Selector cambio de colores promedio: A más diferencia promedio peor identifica los cambios de color-->
+    <label id="etiquetaPromedio" for="promedioInput">Diferencia de pixeles promedio</label>
+    <input type="range" min=1 max=128 id="promedio" name="promedioInput">
+    
+    <script>
+        //Función para activar el cambio de paso elegido
+        document.getElementById("paso").addEventListener('change', function () {
+            paso = parseInt(this.value); // Convertir el valor a número
+        });
+        //Función para cambiar la diferencia de colores promedio
+        document.querySelector("#promedio").onchange = function(){
+            miPromedio = this.value
+        }
+        // DECLARO LOS VALORES INICIALES
+        const video = document.getElementById("video");
+        const lienzo = document.getElementById("lienzo");
+        const lienzo2 = document.getElementById("lienzo2");
+        const contexto = lienzo.getContext("2d");
+        const contexto2 = lienzo2.getContext("2d");
+        contexto2.fillStyle = "rgba(255,255,255,0.01)"
+        var cuadrosx = []
+        var cuadrosy = []
+        var atencionx = []
+        var atenciony = []
+
+        //EL PASO ES CADA CUANTOS PIXELES VAMOS A HACER UNA COMPARACIÓN
+        var paso = 16;
+        //EL PROMEDIO ES LA DIFERENCIA QUE ACEPTAMOS DE MEDIA COMO CAMBIO EN EL ESPACTRO RGB
+        var miPromedio = 20;
+        //CREAMOS UN CONTENEDOR PARA LOS PIXELES DEL FOTOGRAMA ANTERIOR AL ULTIMO
+        var pixelesViejos = [];
+        //CREAMOS UN CONTENEDOR PARA LOS PIXELES DEL ULTIMO FOTOGRAMA
+        //SI DETECTA QUE EL COLOR HA CAMBIADO DE UN FOTOGRAMA A OTRO -> DETECTA QUE HA HABIDO MOVIMIENTO
+        var pixelesNuevos = [];
+        var contador = 0;
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (flujo) {
+                video.srcObject = flujo;
+            })
+            .catch(function (error) {
+                console.log("error: " + error)
+            })
+
+        function videoAlienzo() {
+            //REINICIO DE LOS CUADROS
+            cuadrosx = []
+            cuadrosy = []
+            //CREAMOS UNA CAPA SEMITRANSPARENTE
+            contexto2.fillStyle = "rgba(255,255,255,0.01)"
+            contexto2.fillRect(0, 0, 640, 480)
+            //EN EL CANVAS PEGO EL VIDEO PARA PODER TOCAR LOS PIXELES
+            contexto.drawImage(video, 0, 0, lienzo.width, lienzo.height)
+            //A LOS PIXELES VIEJOS LES PONGO EL VALOR DE LOS ANTERIORES
+            pixelesViejos = pixelesNuevos
+            //REINICIO LA INFORMACION DE LOS PIXELES NUEVOS PARA QUE LA COJA RECIENTE
+            pixelesNuevos = [];
+            //QUIERO REPASAR LA IMAGEN EN X E Y, NO PIXEL A PIXEL, SI NO DANDO SALTOS DEL TAMAÑO DEL PASO
+            for (let x = 0; x < 640; x += paso) {
+                for (let y = 0; y < 480; y += paso) {
+                    //TOMO EL VALOR DEL PIXEL
+                    let pixel = contexto.getImageData(x, y, 1, 1);
+                    //EN LOS PIXELES NUEVOS PONGO LA INFORMACION DE COLOR y DE LA X E Y
+                    //EN UN ARRAY DE PIXELES NUEVOS
+                    pixelesNuevos.push({
+                        data: pixel.data,
+                        x: x,
+                        y: y
+                    })
+                }
+            }
+            //SI ESTOY EN LA SEGUNDA ITERACIÓN (>0, LA VUELTA 0 NO EXISTE PORQUE DE ENTRADA NO HAY UNOS PIXELES VIEJOS)
+            if (contador > 0) {
+                //REPASO EL ARRAY Y TOMO LOS VALORES NUEVOS Y ANTIGUOS Y LOS COMPARO
+                for (let i = 0; i < pixelesNuevos.length; i++) {
+                    let rojoNuevo = pixelesNuevos[i].data[0]
+                    let rojoViejo = pixelesViejos[i].data[0]
+                    let verdeNuevo = pixelesNuevos[i].data[1]
+                    let verdeViejo = pixelesViejos[i].data[1]
+                    let azulNuevo = pixelesNuevos[i].data[2]
+                    let azulViejo = pixelesViejos[i].data[2]
+                    //LOS COMPARO:
+                    let diferenciaRojo = Math.abs(rojoNuevo - rojoViejo)
+                    let diferenciaVerde = Math.abs(verdeNuevo - verdeViejo)
+                    let diferenciaAzul = Math.abs(azulNuevo - azulViejo)
+                    let promedio = (diferenciaRojo + diferenciaVerde + diferenciaAzul) / 3
+                    //SI LA DIFERENCIA ES GRANDE SIGNIFICA QUE HAY MOVIMIENTO
+                    if (promedio > miPromedio) {
+                        //SI HAY MOVIMIENTO DIBUJA UN CUADRO PARA QUE VEAMOS QUE ESTÁ FUNCIONANDO
+                        contexto.strokeRect(pixelesNuevos[i].x,
+                            pixelesNuevos[i].y,
+                            paso,
+                            paso)
+
+                        if (typeof (cuadrosx[pixelesNuevos[i].x]) == 'undefined') {
+                            cuadrosx[pixelesNuevos[i].x] = 1
+                        } else {
+                            cuadrosx[pixelesNuevos[i].x]++
+                        }
+                        if (typeof (cuadrosy[pixelesNuevos[i].y]) == 'undefined') {
+                            cuadrosy[pixelesNuevos[i].y] = 1
+                        } else {
+                            cuadrosy[pixelesNuevos[i].y]++
+                        }
+                    }
+
+                }
+            }
+            //PARA DIBUJAR LAS LÍNEAS HORIZONTALES Y VERTICALES Y LOS CÍRCULOS:
+            //BUSQUEDA DE MÁXIMOS EN X
+            let maxx = 0
+            let maxcuantax = 0;
+            let maxy = 0
+            let maxcuantay = 0;
+
+            cuadrosx.forEach(function (number, index) {
+                if (number > maxcuantax) {
+                    maxcuantax = number;
+                    maxx = index
+                }
+            });
+
+            //BUSQUEDA DE MÁXIMOS EN Y
+            cuadrosy.forEach(function (number, index) {
+                if (number > maxcuantay) {
+                    maxcuantay = number;
+                    maxy = index
+                }
+            });
+            if (maxx != 0) {
+                atencionx.push(maxx)
+                atenciony.push(maxy)
+                if (atencionx.length > 10){
+                    atencionx.splice(0,1)
+                    atenciony.splice(0,1)
+                }
+                let sumax = 0;
+                let sumay = 0;
+                for (let i = 0; i< 10; i++){
+                    sumax += atencionx[i]
+                    sumay += atenciony[i]
+                }
+                sumax /= 10
+                sumay /= 10
+
+                //LINEA PINTADA EN VERTICAL
+                contexto2.beginPath();
+                contexto2.moveTo(maxx, 0)
+                contexto2.lineTo(maxx, 480)
+                contexto2.stroke();
+
+                //LINEA PINTADA EN HORIZONTAL
+                contexto2.beginPath();
+                contexto2.moveTo(0, maxy)
+                contexto2.lineTo(640, maxy)
+                contexto2.stroke();
+
+                //DIBUJO UN CIRCULO
+                contexto2.beginPath();
+                contexto2.arc(maxx, maxy, 30, 0, Math.PI * 2, true)
+                contexto2.stroke()
+
+                //DIBUJO UN CIRCULO DE ATENCION
+                contexto2.fillStyle = "red"
+                contexto2.beginPath();
+                contexto2.arc(sumax, sumay, 10, 0, Math.PI * 2, true)
+                contexto2.fill()
+
+            }
+
+            contador++;
+            requestAnimationFrame(videoAlienzo)
+        }
+        // Cuando arranca el proyecto esto se empieza a ejecutar
+        video.addEventListener('play', function () {
+            videoAlienzo()
+        })
+    </script>
+
+
+</body>
+
+</html>
