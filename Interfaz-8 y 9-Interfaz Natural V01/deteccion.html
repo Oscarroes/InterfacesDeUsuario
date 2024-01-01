@@ -10,16 +10,16 @@
 </head>
 
 <body>
-    <!-- //vamos a meter 2 lienzos uno captura el vídeo el otro es una réplica para coger los valores-->
+    <!-- //vamos a tener 2 lienzos uno captura el vídeo el otro es una réplica para coger los valores-->
     <canvas id="lienzo" width="640px" height="480px"></canvas>
     <canvas id="lienzo2" width="640px" height="480px"></canvas>
     <video id="video" autoplay></video>
-    <!-- Selector de paso: A mayor paso, más saltos entre píxeles entre comparación-->
+    <!-- Selector de paso: A mayor valor de paso, más saltos de píxeles entre comparación-->
     <label id="etiquetaPaso" for="pasoInput">Selecciona el salto de pixeles</label>
     <select id="paso" name="pasoInput">
         <option value="16" selected>Salto de 16px</option>
-        <option value="32">Salto de 64px</option>
-        <option value="64">Salto de 128px</option>
+        <option value="32">Salto de 32px</option>
+        <option value="64">Salto de 64px</option>
     </select>
     <!--Selector cambio de colores promedio: A más diferencia promedio peor identifica los cambios de color-->
     <label id="etiquetaPromedio" for="promedioInput">Diferencia de pixeles promedio</label>
@@ -30,7 +30,7 @@
         document.getElementById("paso").addEventListener('change', function () {
             paso = parseInt(this.value); // Convertir el valor a número
         });
-        //Función para cambiar la diferencia de colores promedio
+        //Función para elegir el cambio promedio de color aceptado como diferente 
         document.querySelector("#promedio").onchange = function(){
             miPromedio = this.value
         }
@@ -94,7 +94,7 @@
             }
             //SI ESTOY EN LA SEGUNDA ITERACIÓN (>0, LA VUELTA 0 NO EXISTE PORQUE DE ENTRADA NO HAY UNOS PIXELES VIEJOS)
             if (contador > 0) {
-                //REPASO EL ARRAY Y TOMO LOS VALORES NUEVOS Y ANTIGUOS Y LOS COMPARO
+                //REPASO EL ARRAY, TOMO LOS VALORES NUEVOS Y ANTIGUOS Y LOS COMPARO
                 for (let i = 0; i < pixelesNuevos.length; i++) {
                     let rojoNuevo = pixelesNuevos[i].data[0]
                     let rojoViejo = pixelesViejos[i].data[0]
@@ -129,7 +129,7 @@
 
                 }
             }
-            //PARA DIBUJAR LAS LÍNEAS HORIZONTALES Y VERTICALES Y LOS CÍRCULOS:
+            //PARA DIBUJAR LAS LÍNEAS HORIZONTALES, VERTICALES Y LOS CÍRCULOS:
             //BUSQUEDA DE MÁXIMOS EN X
             let maxx = 0
             let maxcuantax = 0;
