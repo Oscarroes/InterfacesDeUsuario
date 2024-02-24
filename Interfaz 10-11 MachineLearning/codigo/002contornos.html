@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        // Cargar la imagen dentro de un canvas, para luego poder manipularla:
+        window.onload = function(){
+            var contexto = document.getElementById("lienzo").getContext("2d")
+            var contexto2 = document.getElementById("lienzo2").getContext("2d")
+            let imagen = new Image();
+            imagen.src = "mano1.jpg"
+            imagen.onload = function(){
+                //primero pinto la imagen original
+                contexto.drawImage(imagen,0,0)
+                //En el segundo canvas pinto un rectángulo blanco:
+                contexto2.fillStyle = "white";
+                contexto2.fillRect(0,0,512,512);
+                //ahora vamos a detectar los bordes/contorno en la imagen pixel a pixel
+                let imagenlienzo1 = contexto.getImageData(0,0,512,512);
+                let imagenlienzo2 = contexto2.getImageData(0,0,512,512);
+                //recorremos la imagen pixel a pixel por filas:
+                //i+=4 porque cada pixel está cada 4 valores RGBA
+                for(let i = 0; i<imagenlienzo1.data.length; i+=4){
+                    //diferencia fijándonos solo en el canal Rojo:
+                    let diferencia = Math.abs(imagenlienzo1.data[i]-imagenlienzo1.data[i+4])
+                    if(diferencia > 10){
+                        //Esto quiere decir que si la diferencia encontrada es mayor que 1o nos pinta un pixel Negro
+                        imagenlienzo2.data[i] = 0;
+                        imagenlienzo2.data[i+1] = 0;
+                        imagenlienzo2.data[i+2] = 0;
+                        imagenlienzo2.data[i+3] = 255;
+                    }else{
+                        //SI la diferencia no es mayor que 10 pinta un pixel blanco:
+                        imagenlienzo2.data[i] = 255;
+                        imagenlienzo2.data[i+1] = 255;
+                        imagenlienzo2.data[i+2] = 255;
+                        imagenlienzo2.data[i+3] = 255;
+
+                    }
+                }
+
+                contexto2.putImageData(imagenlienzo2,0,0);
+
+                //Esta parte ha empezado a hacerla pero ha decidido que es mejor hacerlo de otra forma
+                // for(let x = 0; x<512; x++){
+                //     for(let y = 0; x<512; y++){
+                //         //cogemos bloques de 2 pixeles en x, 1 en y
+                //         //poner el .data convierte al objeto getImagedata en un array de sus datos
+                //         let datos = contexto.getImageData(x,y,2,1).data;
+                //         //RGBA el 0 es rojo, 1 verde, 2 azul, 3 alfa, 4 vuelve a ser rojo:
+                //         let pixel1rojo = datos[0];
+                //         let pixel2rojo = datos[4];
+                //         let diferencia = Math.abs(pixel1rojo-pixel2rojo);
+                //     }
+
+                // }
+            }
+        }
+    </script>
+    <style>
+        canvas{border: 1px solid black;}
+    </style>
+</head>
+<body>
+    <canvas width=512 height=512 id="lienzo"></canvas>
+    <canvas width=512 height=512 id="lienzo2"></canvas>
+    
+</body>
+</html>
